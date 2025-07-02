@@ -23,8 +23,22 @@ export function Header() {
               </p>
             </div>
           </div>
-          {/* Auth Button Right Aligned */}
-          <div className="ml-auto flex items-center">
+          {/* Auth Button and User Info */}
+          <div className="ml-auto flex items-center space-x-4">
+            {currentUser && (
+              <div className="flex items-center space-x-2">
+                {currentUser.photoURL && (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="h-8 w-8 rounded-full"
+                  />
+                )}
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {currentUser.displayName || currentUser.email}
+                </span>
+              </div>
+            )}
             {currentUser ? (
               <button
                 onClick={logout}
