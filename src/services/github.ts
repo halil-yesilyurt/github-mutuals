@@ -97,8 +97,11 @@ export class GitHubService {
 
   async getMutuals(username: string): Promise<FollowComparison> {
     try {
-      const [user, followers, following] = await Promise.all([
-        this.getUser(username),
+      // First get the user to validate the username
+      const user = await this.getUser(username);
+      
+      // Then get followers and following in parallel
+      const [followers, following] = await Promise.all([
         this.getFollowers(username),
         this.getFollowing(username)
       ]);
