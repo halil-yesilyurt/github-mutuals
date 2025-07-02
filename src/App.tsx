@@ -5,6 +5,7 @@ import { SearchForm } from './components/SearchForm';
 import { UserCard } from './components/UserCard';
 import { GitHubService } from './services/github';
 import type { FollowComparison } from './types';
+import { AuthProvider } from './contexts/AuthContext';
 
 const INITIAL_SHOW_COUNT = 9;
 
@@ -216,7 +217,9 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+     <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
