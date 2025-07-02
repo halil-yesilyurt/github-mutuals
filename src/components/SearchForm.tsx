@@ -8,6 +8,9 @@ interface SearchFormProps {
 export function SearchForm({ onSearch, loading }: SearchFormProps) {
   const [username, setUsername] = useState('');
 
+  // Debug: log loading prop
+  console.log('SearchForm loading:', loading);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {

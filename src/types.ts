@@ -21,12 +21,4 @@ export interface SearchRecord {
   username: string;
   timestamp: Date;
   userId?: string;
-}
-
-export interface AuthUser {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-  accessToken?: string;
 } 
