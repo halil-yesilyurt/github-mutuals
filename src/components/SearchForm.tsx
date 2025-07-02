@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SearchFormProps {
   onSearch: (username: string) => void;
   loading: boolean;
+  defaultUsername?: string;
 }
 
-export function SearchForm({ onSearch, loading }: SearchFormProps) {
+export function SearchForm({ onSearch, loading, defaultUsername }: SearchFormProps) {
   const [username, setUsername] = useState('');
+
+  // Auto-fill and search when defaultUsername changes
+  useEffect(() => {
+    if (defaultUsername && defaultUsername !== username) {
+      setUsername(defaultUsername);
+      onSearch(defaultUsername);
+    }
+    // eslint-disable-next-line
+  }, [defaultUsername]);
 
   // Debug: log loading prop
   console.log('SearchForm loading:', loading);
