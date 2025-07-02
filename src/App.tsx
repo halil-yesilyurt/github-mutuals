@@ -1,22 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Header } from './components/Header';
 import { SearchForm } from './components/SearchForm';
 import { UserCard } from './components/UserCard';
 import { GitHubService } from './services/github';
 import type { FollowComparison } from './types';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { saveSearch } from './services/firebase';
 
 const INITIAL_SHOW_COUNT = 9;
 
 function AppContent() {
+  const { currentUser } = useAuth();
+  // Debug: log all currentUser info
+  console.log('currentUser:', currentUser);
+  if (currentUser) {
+    console.log('displayName:', currentUser.displayName);
+    console.log('email:', currentUser.email);
+    console.log('uid:', currentUser.uid);
+    console.log('providerData:', currentUser.providerData);
+  }
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<FollowComparison | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMutuals, setShowMutuals] = useState(INITIAL_SHOW_COUNT);
   const [showNotFollowingBack, setShowNotFollowingBack] = useState(INITIAL_SHOW_COUNT);
-
+  const [githubUsername, setGithubUsername] = useState<string>('');
   const githubService = new GitHubService();
+  const hasAutoSearched = useRef(false);
+
+  // Fetch GitHub username after sign-in
+  useEffect(() => {
+    async function fetchUsername() {
+      if (
+        currentUser &&
+        currentUser.providerData?.[0]?.providerId === 'github.com' &&
+        !githubUsername
+      ) {
+        const githubId = currentUser.providerData[0].uid;
+        if (githubId) {
+          try {
+            const res = await fetch(`https://api.github.com/user/${githubId}`);
+            const data = await res.json();
+            if (data.login) {
+              setGithubUsername(data.login);
+            }
+          } catch (e) {
+            console.error('Failed to fetch GitHub username:', e);
+          }
+        }
+      } else if (!currentUser) {
+        setGithubUsername('');
+      }
+    }
+    fetchUsername();
+    // eslint-disable-next-line
+  }, [currentUser]);
+
+  // Auto-search when githubUsername is set (after sign-in)
+  useEffect(() => {
+    if (githubUsername && !hasAutoSearched.current) {
+      handleSearch(githubUsername);
+      hasAutoSearched.current = true;
+    }
+    if (!githubUsername) {
+      hasAutoSearched.current = false;
+    }
+    // eslint-disable-next-line
+  }, [githubUsername]);
 
   const handleSearch = async (username: string) => {
     setLoading(true);
@@ -28,6 +79,12 @@ function AppContent() {
     try {
       const comparison = await githubService.getMutuals(username);
       setResults(comparison);
+      // Save search to Firestore
+      try {
+        await saveSearch(username, currentUser?.uid);
+      } catch (firebaseError) {
+        // Ignore Firestore errors for now
+      }
     } catch (err: any) {
       setError(err.message || 'An error occurred while searching');
     } finally {
@@ -49,7 +106,7 @@ function AppContent() {
 
         {/* Search Form */}
         <div className='mb-8'>
-          <SearchForm onSearch={handleSearch} loading={loading} />
+          <SearchForm onSearch={handleSearch} loading={loading} defaultUsername={githubUsername} />
         </div>
 
         {/* Error Message */}
@@ -217,7 +274,7 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-     <AuthProvider>
+      <AuthProvider>
         <AppContent />
       </AuthProvider>
     </ThemeProvider>
