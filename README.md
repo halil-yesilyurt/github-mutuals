@@ -1,209 +1,186 @@
 # GitHub Mutuals
 
-A modern web application that helps users check which GitHub accounts they follow also follow them back. Built with React, TypeScript, Tailwind CSS, and Firebase.
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Tech: React](https://img.shields.io/badge/tech-React-blue?logo=react)
+![Tech: TypeScript](https://img.shields.io/badge/tech-TypeScript-blue?logo=typescript)
+![Tech: Firebase](https://img.shields.io/badge/tech-Firebase-yellow?logo=firebase)
 
-![GitHub Mutuals Screenshot](https://via.placeholder.com/800x400/4f46e5/ffffff?text=GitHub+Mutuals+App)
+---
 
-## 🌟 Features
+## Overview
 
-- **GitHub OAuth Login** - Optional sign-in for better API rate limits
-- **Manual Username Search** - Search any public GitHub username
-- **Mutual Followers Analysis** - See who follows you back
-- **Non-Mutual Detection** - Identify users who don't follow you back
-- **Dark/Light Mode** - Modern theme toggle
-- **Search History** - Firebase-powered search tracking
-- **Responsive Design** - Works on all devices
-- **Real-time Results** - Fast GitHub API integration
+**GitHub Mutuals** is a modern web app that helps you discover which GitHub users you follow also follow you back. Search by username (no login required) or sign in with GitHub for more accurate results and higher API limits. Every search is saved to Firebase for analytics and tracking.
 
-## 🚀 Tech Stack
+---
 
-- **Frontend**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS v4
-- **Backend**: Firebase (Auth + Firestore)
-- **API**: GitHub REST API
-- **Deployment**: Ready for Vercel/Netlify
+## 🚀 Features
 
-## 📦 Installation
+### 🔐 Authentication
 
-1. **Clone the repository**
+- Sign in with GitHub (OAuth) for higher API rate limits and session persistence
+- Or search by any public GitHub username without logging in
+
+### 🔍 Search & Analysis
+
+- Fetches both `followers` and `following` lists for a username
+- Compares and displays:
+  - ✅ **Mutual followers** (users you follow who follow you back)
+  - ❌ **Not following back** (users you follow who don't follow you back)
+- Handles large lists with pagination ("Show More")
+- Loading spinners and error messages for invalid usernames, rate limits, etc.
+
+### 📦 Data Persistence
+
+- Every search is saved to Firebase Firestore with:
+  - `username` (searched)
+  - `timestamp`
+  - `userId` (if signed in)
+  - `userAgent`, `referrer` (for analytics)
+
+### 🧑‍🎨 UI/UX
+
+- Responsive, modern design with Tailwind CSS
+- List view with avatars, usernames, and profile links
+- Export results to CSV or clipboard
+- Privacy policy and data collection notice
+
+---
+
+## 📸 App Screenshots & Demo
+
+<p align="center">
+   <b>Main Page – Search and Overview</b><br/>
+  <img src="public/screenshot-2.png" alt="Signed-in: Not Following Back" width="600" />
+</p>
+
+<p align="center">
+    <b>Signed-in: Users You Follow Who Don't Follow Back</b><br/>
+  <img src="public/screenshot-1.png" alt="Main Page" width="600" />
+</p>
+
+<p align="center">
+  <b>Mutual Followers – Users Who Follow Each Other</b><br/>
+  <img src="public/screenshot-3.png" alt="Mutual Followers" width="600" />
+</p>
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS, PostCSS
+- **Routing:** React Router DOM
+- **Authentication & Database:** Firebase Auth (GitHub), Firestore
+- **API:** GitHub REST API
+- **Build Tools:** Node.js, npm, tsc, Rollup (via Vite)
+- **Linting:** ESLint
+- **Documentation:** Markdown
+- **Version Control:** Git
+
+---
+
+## ⚡ Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16+ recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [Git](https://git-scm.com/)
+
+### Installation
+
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/github-mutuals.git
+   git clone https://github.com/halil-yesilyurt/github-mutuals.git
    cd github-mutuals
    ```
-
-2. **Install dependencies**
+2. **Install dependencies:**
    ```bash
    npm install
+   # or
+   yarn install
    ```
-
-3. **Configure Firebase**
-   - Create a new Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-   - Enable Authentication and add GitHub as a provider
-   - Enable Firestore Database
-   - Copy your Firebase config and update `src/firebase.ts`:
-
-   ```typescript
-   const firebaseConfig = {
-     apiKey: "your-api-key",
-     authDomain: "your-auth-domain",
-     projectId: "your-project-id",
-     storageBucket: "your-storage-bucket",
-     messagingSenderId: "your-messaging-sender-id",
-     appId: "your-app-id"
-   };
-   ```
-
-4. **Configure GitHub OAuth**
-   - Go to GitHub Settings > Developer settings > OAuth Apps
-   - Create a new OAuth App with:
-     - Authorization callback URL: `https://your-project.firebaseapp.com/__/auth/handler`
-   - Copy the Client ID and Client Secret to Firebase Auth settings
-
-5. **Set up Firestore Security Rules**
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /searches/{document} {
-         allow read, write: if true; // For demo purposes
-         // In production, add proper auth rules
-       }
-     }
-   }
-   ```
-
-6. **Start the development server**
+3. **Set up Firebase & GitHub OAuth:**
+   - Create a Firebase project ([guide](FIREBASE_SETUP.md))
+   - Enable GitHub Auth and Firestore in Firebase
+   - Create a GitHub OAuth App and add credentials to Firebase Auth
+   - Copy your Firebase config to a `.env` file:
+     ```env
+     VITE_FIREBASE_API_KEY=your-api-key
+     VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+     VITE_FIREBASE_PROJECT_ID=your-project-id
+     VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+     VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+     VITE_FIREBASE_APP_ID=your-app-id
+     ```
+4. **Start the development server:**
    ```bash
    npm run dev
+   # or
+   yarn dev
    ```
 
-## 🔧 Configuration
-
-### Firebase Setup
-
-1. Create a Firebase project
-2. Enable Authentication > Sign-in method > GitHub
-3. Enable Firestore Database
-4. Update the config in `src/firebase.ts`
-
-### GitHub OAuth Setup
-
-1. Go to GitHub > Settings > Developer settings > OAuth Apps
-2. Create new OAuth App:
-   - **Application name**: GitHub Mutuals
-   - **Homepage URL**: `http://localhost:5173` (for development)
-   - **Authorization callback URL**: `https://your-project.firebaseapp.com/__/auth/handler`
-3. Copy Client ID and Secret to Firebase Auth GitHub provider settings
-
-### Environment Variables (Optional)
-
-For additional security, you can use environment variables:
-
-```bash
-# .env.local
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
-VITE_FIREBASE_PROJECT_ID=your-project-id
-```
-
-## 🎯 Usage
-
-1. **Without Login**: Enter any GitHub username to analyze their followers
-2. **With Login**: Sign in with GitHub for higher API rate limits
-3. **View Results**: See mutual followers and non-mutual users
-4. **Dark Mode**: Toggle between light and dark themes
-5. **Search History**: All searches are automatically saved to Firebase
-
-## 📊 API Rate Limits
-
-- **Unauthenticated**: 60 requests/hour per IP
-- **Authenticated**: 5,000 requests/hour per user
-
-## 🔒 Privacy & Security
-
-- No sensitive data is stored
-- Only usernames and timestamps are saved to Firebase
-- GitHub tokens are handled securely by Firebase Auth
-- All API calls are made client-side
-
-## 🚀 Deployment
-
-### Vercel
-```bash
-npm run build
-vercel --prod
-```
-
-### Netlify
-```bash
-npm run build
-# Upload dist/ folder to Netlify
-```
-
-### Firebase Hosting
-```bash
-npm run build
-firebase deploy
-```
-
-## 🛠️ Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
-```
+---
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/          # React components
-│   ├── Header.tsx      # Navigation and auth
-│   ├── SearchForm.tsx  # Username search
-│   └── UserCard.tsx    # User display component
-├── contexts/           # React contexts
-│   ├── AuthContext.tsx # Authentication state
-│   └── ThemeContext.tsx# Dark/light mode
-├── services/           # API services
-│   ├── firebase.ts     # Firebase operations
-│   └── github.ts       # GitHub API client
-├── types.ts            # TypeScript types
-├── firebase.ts         # Firebase config
-├── App.tsx            # Main app component
-└── main.tsx           # App entry point
+├── public/                # Static assets (screenshots, icons)
+├── src/
+│   ├── components/        # React components (Header, SearchForm, UserCard)
+│   ├── contexts/          # React contexts (Auth, Theme)
+│   ├── services/          # API services (firebase, github)
+│   ├── types.ts           # TypeScript types
+│   ├── firebase.ts        # Firebase config
+│   ├── App.tsx            # Main app component
+│   └── main.tsx           # App entry point
+├── README.md
+├── package.json
+└── ...
 ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- GitHub API for providing comprehensive user data
-- Firebase for authentication and database services
-- Tailwind CSS for the beautiful styling system
-- React team for the amazing framework
 
 ---
 
-**Made with ❤️ by [Your Name]**
+## ⏳ API Rate Limits & Considerations
+
+- **GitHub REST API rate limits:**
+  - Unauthenticated: **60 requests/hour**
+  - Authenticated: **5,000 requests/hour**
+- You can only check "who follows you" for other users if you are logged in as them (GitHub API limitation)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add feature'`
+4. Push to your branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 💬 Contact / Support
+
+For questions, suggestions, or support, please [open an issue](https://github.com/halil-yesilyurt/github-mutuals/issues).
+
+---
+
+## 🙏 Acknowledgments
+
+- GitHub API
+- Firebase
+- Tailwind CSS
+- React
+
+---
+
+**Made with ❤️ by [halil-yesilyurt](https://github.com/halil-yesilyurt)**
