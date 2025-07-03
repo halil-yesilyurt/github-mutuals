@@ -50,14 +50,6 @@ async function copyToClipboard(text: string) {
 
 function AppContent() {
   const { currentUser, githubAccessToken } = useAuth();
-  // Debug: log all currentUser info
-  console.log('currentUser:', currentUser);
-  if (currentUser) {
-    console.log('displayName:', currentUser.displayName);
-    console.log('email:', currentUser.email);
-    console.log('uid:', currentUser.uid);
-    console.log('providerData:', currentUser.providerData);
-  }
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<FollowComparison | null>(null);
   const [error, setError] = useState<string | null>(null);

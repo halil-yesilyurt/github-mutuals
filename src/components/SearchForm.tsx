@@ -18,9 +18,6 @@ export function SearchForm({ onSearch, loading, defaultUsername }: SearchFormPro
     }
   }, [defaultUsername]);
 
-  // Debug: log loading prop
-  console.log('SearchForm loading:', loading);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {
