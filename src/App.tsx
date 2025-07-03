@@ -11,7 +11,7 @@ import { saveSearch } from './services/firebase';
 const INITIAL_SHOW_COUNT = 9;
 
 function AppContent() {
-  const { currentUser } = useAuth();
+  const { currentUser, githubAccessToken } = useAuth();
   // Debug: log all currentUser info
   console.log('currentUser:', currentUser);
   if (currentUser) {
@@ -26,8 +26,17 @@ function AppContent() {
   const [showMutuals, setShowMutuals] = useState(INITIAL_SHOW_COUNT);
   const [showNotFollowingBack, setShowNotFollowingBack] = useState(INITIAL_SHOW_COUNT);
   const [githubUsername, setGithubUsername] = useState<string>('');
-  const githubService = new GitHubService();
+  const githubService = new GitHubService(githubAccessToken || undefined);
   const hasAutoSearched = useRef(false);
+
+  // Reset state when user logs out
+  useEffect(() => {
+    if (!currentUser) {
+      setResults(null);
+      setError(null);
+      setGithubUsername('');
+    }
+  }, [currentUser]);
 
   // Fetch GitHub username after sign-in
   useEffect(() => {
@@ -59,17 +68,22 @@ function AppContent() {
 
   // Auto-search when githubUsername is set (after sign-in)
   useEffect(() => {
-    if (githubUsername && !hasAutoSearched.current) {
+    if (githubUsername && githubAccessToken && !hasAutoSearched.current) {
       handleSearch(githubUsername);
       hasAutoSearched.current = true;
     }
-    if (!githubUsername) {
+    if (!githubUsername || !githubAccessToken) {
       hasAutoSearched.current = false;
     }
     // eslint-disable-next-line
-  }, [githubUsername]);
+  }, [githubUsername, githubAccessToken]);
 
   const handleSearch = async (username: string) => {
+    // Prevent search if not signed in or no token
+    if (!currentUser || !githubAccessToken) {
+      setError('You must be signed in with GitHub to search.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setResults(null);
