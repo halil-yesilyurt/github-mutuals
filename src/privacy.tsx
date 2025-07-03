@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center px-4">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Header, Footer } from './components/Header';
 import { SearchForm } from './components/SearchForm';
@@ -10,7 +10,8 @@ import { saveSearch } from './services/firebase';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PrivacyPolicy from './privacy';
 
-const INITIAL_SHOW_COUNT = 9;
+const INITIAL_SHOW_COUNT = 12;
+const SHOW_MORE_COUNT = 6;
 
 function AppContent() {
   const { currentUser, githubAccessToken } = useAuth();
@@ -28,7 +29,7 @@ function AppContent() {
   const [showMutuals, setShowMutuals] = useState(INITIAL_SHOW_COUNT);
   const [showNotFollowingBack, setShowNotFollowingBack] = useState(INITIAL_SHOW_COUNT);
   const [githubUsername, setGithubUsername] = useState<string>('');
-  const githubService = new GitHubService(githubAccessToken || undefined);
+  // const githubService = new GitHubService(githubAccessToken || undefined);
 
   // Reset state when user logs out
   useEffect(() => {
@@ -212,8 +213,8 @@ function AppContent() {
                   {results.notFollowingBack.length > showNotFollowingBack && (
                     <div className='flex justify-center mt-4'>
                       <button
-                        className='px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors'
-                        onClick={() => setShowNotFollowingBack((prev) => prev + INITIAL_SHOW_COUNT)}
+                        className='px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer'
+                        onClick={() => setShowNotFollowingBack((prev) => prev + SHOW_MORE_COUNT)}
                       >
                         Show More
                       </button>
@@ -253,8 +254,8 @@ function AppContent() {
                   {results.mutuals.length > showMutuals && (
                     <div className='flex justify-center mt-4'>
                       <button
-                        className='px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors'
-                        onClick={() => setShowMutuals((prev) => prev + INITIAL_SHOW_COUNT)}
+                        className='px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer'
+                        onClick={() => setShowMutuals((prev) => prev + SHOW_MORE_COUNT)}
                       >
                         Show More
                       </button>
