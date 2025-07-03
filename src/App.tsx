@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { Header } from './components/Header';
+import { Header, Footer } from './components/Header';
 import { SearchForm } from './components/SearchForm';
 import { UserCard } from './components/UserCard';
 import { GitHubService } from './services/github';
 import type { FollowComparison } from './types';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { saveSearch } from './services/firebase';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import PrivacyPolicy from './privacy';
 
 const INITIAL_SHOW_COUNT = 9;
 
@@ -91,14 +93,10 @@ function AppContent() {
     try {
       const comparison = await service.getMutuals(username);
       setResults(comparison);
-      // Save search to Firestore if signed in
-      try {
-        if (currentUser) {
-          await saveSearch(username, currentUser?.uid);
-        }
-      } catch (firebaseError) {
-        // Ignore Firestore errors for now
-      }
+      // Save search to Firestore
+      const userAgent = navigator.userAgent;
+      const referrer = document.referrer;
+      await saveSearch(username, currentUser?.uid, userAgent, referrer);
     } catch (err: any) {
       if (err?.message === 'API rate limit exceeded') {
         setError('API rate limit exceeded. Please sign in with GitHub for more searches.');
@@ -111,9 +109,9 @@ function AppContent() {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+    <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col'>
       <Header />
-      <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+      <main className='flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full'>
         {/* Hero Section */}
         <div className='text-center mb-12'>
           <h2 className='text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl'>Find Your GitHub Mutuals</h2>
@@ -285,6 +283,7 @@ function AppContent() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }
@@ -293,7 +292,12 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AppContent />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+          </Routes>
+        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   );

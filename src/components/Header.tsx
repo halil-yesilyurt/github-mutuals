@@ -62,4 +62,14 @@ export function Header() {
       </div>
     </header>
   );
+}
+
+// Footer with privacy notice
+export function Footer() {
+  return (
+    <footer className="w-full text-center py-4 text-xs text-gray-500 dark:text-gray-400 bg-transparent mt-8">
+      This site collects search data (username, browser info, referrer) for analytics. See our{' '}
+      <a href="/privacy" className="underline hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</a>.
+    </footer>
+  );
 } 
