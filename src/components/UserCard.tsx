@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GitHubUser } from '../types';
 
 interface UserCardProps {
