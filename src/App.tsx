@@ -120,7 +120,7 @@ function AppContent() {
 
         {/* Search Form */}
         <div className='mb-8'>
-          <SearchForm onSearch={handleSearch} loading={loading} defaultUsername={githubUsername} />
+          <SearchForm onSearch={handleSearch} loading={loading} defaultUsername={githubUsername} resetSignal={currentUser} />
         </div>
 
         {/* Error Message */}
