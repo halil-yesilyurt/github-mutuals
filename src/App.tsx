@@ -4,7 +4,7 @@ import { Header, Footer } from './components/Header';
 import { SearchForm } from './components/SearchForm';
 import { UserCard } from './components/UserCard';
 import { GitHubService } from './services/github';
-import type { FollowComparison } from './types';
+import type { FollowComparison, GitHubUser } from './types';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { saveSearch } from './services/firebase';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -12,6 +12,41 @@ import PrivacyPolicy from './privacy';
 
 const INITIAL_SHOW_COUNT = 12;
 const SHOW_MORE_COUNT = 6;
+
+// Utility: Convert user list to CSV
+function usersToCSV(users: GitHubUser[]): string {
+  const header = 'Username,Profile URL,Name';
+  const rows = users.map(u => `${u.login},https://github.com/${u.login},${u.name ? '"' + u.name.replace(/"/g, '""') + '"' : ''}`);
+  return [header, ...rows].join('\n');
+}
+
+// Utility: Convert user list to clipboard text (tab-separated)
+function usersToClipboard(users: GitHubUser[]): string {
+  const header = 'Username\tProfile URL\tName';
+  const rows = users.map(u => `${u.login}\thttps://github.com/${u.login}\t${u.name || ''}`);
+  return [header, ...rows].join('\n');
+}
+
+function downloadCSV(filename: string, text: string) {
+  const blob = new Blob([text], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  } catch {
+    alert('Failed to copy.');
+  }
+}
 
 function AppContent() {
   const { currentUser, githubAccessToken } = useAuth();
@@ -203,6 +238,20 @@ function AppContent() {
                 </svg>
                 Not Following Back ({results.notFollowingBack.length})
               </h3>
+              <div className='flex gap-2 mb-4'>
+                <button
+                  className='px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer text-sm'
+                  onClick={() => downloadCSV('not-following-back.csv', usersToCSV(results.notFollowingBack))}
+                >
+                  Export CSV
+                </button>
+                <button
+                  className='px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer text-sm'
+                  onClick={() => copyToClipboard(usersToClipboard(results.notFollowingBack))}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
               {results.notFollowingBack.length > 0 ? (
                 <>
                   <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
@@ -244,6 +293,20 @@ function AppContent() {
                 </svg>
                 Mutual Followers ({results.mutuals.length})
               </h3>
+              <div className='flex gap-2 mb-4'>
+                <button
+                  className='px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer text-sm'
+                  onClick={() => downloadCSV('mutual-followers.csv', usersToCSV(results.mutuals))}
+                >
+                  Export CSV
+                </button>
+                <button
+                  className='px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer text-sm'
+                  onClick={() => copyToClipboard(usersToClipboard(results.mutuals))}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
               {results.mutuals.length > 0 ? (
                 <>
                   <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
