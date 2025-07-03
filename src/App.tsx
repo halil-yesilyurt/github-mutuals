@@ -29,7 +29,6 @@ function AppContent() {
   const [showNotFollowingBack, setShowNotFollowingBack] = useState(INITIAL_SHOW_COUNT);
   const [githubUsername, setGithubUsername] = useState<string>('');
   const githubService = new GitHubService(githubAccessToken || undefined);
-  const hasAutoSearched = useRef(false);
 
   // Reset state when user logs out
   useEffect(() => {
@@ -40,45 +39,46 @@ function AppContent() {
     }
   }, [currentUser]);
 
-  // Fetch GitHub username after sign-in
+  // Handle sign-in and sign-out: reset and search logic
   useEffect(() => {
-    async function fetchUsername() {
-      if (
-        currentUser &&
-        currentUser.providerData?.[0]?.providerId === 'github.com' &&
-        !githubUsername
-      ) {
+    async function handleAuthChange() {
+      if (currentUser && currentUser.providerData?.[0]?.providerId === 'github.com') {
+        // User just signed in
+        setError(null);
+        setResults(null);
+        setShowMutuals(INITIAL_SHOW_COUNT);
+        setShowNotFollowingBack(INITIAL_SHOW_COUNT);
+        setGithubUsername('');
+        // Fetch username and search
         const githubId = currentUser.providerData[0].uid;
         if (githubId) {
           try {
-            const res = await fetch(`https://api.github.com/user/${githubId}`);
+            const res = await fetch(`https://api.github.com/user/${githubId}`, {
+              headers: githubAccessToken ? { Authorization: `token ${githubAccessToken}` } : {},
+            });
             const data = await res.json();
             if (data.login) {
               setGithubUsername(data.login);
+              if (githubAccessToken) {
+                handleSearch(data.login);
+              }
             }
           } catch (e) {
             console.error('Failed to fetch GitHub username:', e);
           }
         }
       } else if (!currentUser) {
+        // User just signed out
+        setError(null);
+        setResults(null);
+        setShowMutuals(INITIAL_SHOW_COUNT);
+        setShowNotFollowingBack(INITIAL_SHOW_COUNT);
         setGithubUsername('');
       }
     }
-    fetchUsername();
+    handleAuthChange();
     // eslint-disable-next-line
-  }, [currentUser]);
-
-  // Auto-search when githubUsername is set (after sign-in)
-  useEffect(() => {
-    if (githubUsername && githubAccessToken && !hasAutoSearched.current) {
-      handleSearch(githubUsername);
-      hasAutoSearched.current = true;
-    }
-    if (!githubUsername || !githubAccessToken) {
-      hasAutoSearched.current = false;
-    }
-    // eslint-disable-next-line
-  }, [githubUsername, githubAccessToken]);
+  }, [currentUser, githubAccessToken]);
 
   const handleSearch = async (username: string) => {
     setLoading(true);
@@ -122,7 +122,7 @@ function AppContent() {
 
         {/* Search Form */}
         <div className='mb-8'>
-          <SearchForm onSearch={handleSearch} loading={loading} defaultUsername={githubUsername} resetSignal={currentUser} />
+          <SearchForm onSearch={handleSearch} loading={loading} defaultUsername={githubUsername} />
         </div>
 
         {/* Error Message */}

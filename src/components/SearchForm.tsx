@@ -4,25 +4,20 @@ interface SearchFormProps {
   onSearch: (username: string) => void;
   loading: boolean;
   defaultUsername?: string;
-  resetSignal?: any;
 }
 
-export function SearchForm({ onSearch, loading, defaultUsername, resetSignal }: SearchFormProps) {
-  const [username, setUsername] = useState('');
+export function SearchForm({ onSearch, loading, defaultUsername }: SearchFormProps) {
+  const [username, setUsername] = useState(defaultUsername || '');
 
-  // Auto-fill and search when defaultUsername changes
-  useEffect(() => {
+  // When defaultUsername changes, update local state if it differs
+  React.useEffect(() => {
     if (defaultUsername && defaultUsername !== username) {
       setUsername(defaultUsername);
-      onSearch(defaultUsername);
     }
-    // eslint-disable-next-line
+    if (!defaultUsername && username) {
+      setUsername('');
+    }
   }, [defaultUsername]);
-
-  // Reset input when resetSignal changes
-  useEffect(() => {
-    setUsername('');
-  }, [resetSignal]);
 
   // Debug: log loading prop
   console.log('SearchForm loading:', loading);
