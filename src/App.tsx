@@ -79,28 +79,32 @@ function AppContent() {
   }, [githubUsername, githubAccessToken]);
 
   const handleSearch = async (username: string) => {
-    // Prevent search if not signed in or no token
-    if (!currentUser || !githubAccessToken) {
-      setError('You must be signed in with GitHub to search.');
-      return;
-    }
     setLoading(true);
     setError(null);
     setResults(null);
     setShowMutuals(INITIAL_SHOW_COUNT);
     setShowNotFollowingBack(INITIAL_SHOW_COUNT);
 
+    // Use token only if signed in
+    const service = new GitHubService(githubAccessToken || undefined);
+
     try {
-      const comparison = await githubService.getMutuals(username);
+      const comparison = await service.getMutuals(username);
       setResults(comparison);
-      // Save search to Firestore
+      // Save search to Firestore if signed in
       try {
-        await saveSearch(username, currentUser?.uid);
+        if (currentUser) {
+          await saveSearch(username, currentUser?.uid);
+        }
       } catch (firebaseError) {
         // Ignore Firestore errors for now
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred while searching');
+      if (err?.message === 'API rate limit exceeded') {
+        setError('API rate limit exceeded. Please sign in with GitHub for more searches.');
+      } else {
+        setError(err.message || 'An error occurred while searching');
+      }
     } finally {
       setLoading(false);
     }
