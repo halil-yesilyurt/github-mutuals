@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // This application only writes privacy-minimized analytics for a signed-in
+    // user's own searches. Client-side reads, updates, and deletes are denied.
+    match /searches/{document} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['username', 'userId', 'timestamp'])
+        && request.resource.data.keys().hasAll(['username', 'userId', 'timestamp'])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.username is string
+        && request.resource.data.username.size() > 0
+        && request.resource.data.username.size() <= 39
+        && request.resource.data.username.matches('^[A-Za-z0-9-]+$')
+        && request.resource.data.timestamp == request.time;
+      allow read, update, delete: if false;
+    }
+    // Deny any other paths by default.
+  }
+}
