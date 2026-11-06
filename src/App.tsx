@@ -121,15 +121,18 @@ function AppContent() {
     try {
       const comparison = await service.getMutuals(username);
       setResults(comparison);
-      // Save search to Firestore
-      const userAgent = navigator.userAgent;
-      const referrer = document.referrer;
-      await saveSearch(username, currentUser?.uid, userAgent, referrer);
-    } catch (err: any) {
-      if (err?.message === 'API rate limit exceeded') {
+      // Optional, privacy-minimized analytics must never break a successful search.
+      if (currentUser?.uid) {
+        void saveSearch(username, currentUser.uid).catch(() => {
+          // Search results are independent from optional analytics storage.
+        });
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred while searching';
+      if (message === 'API rate limit exceeded') {
         setError('API rate limit exceeded. Please sign in with GitHub for more searches.');
       } else {
-        setError(err.message || 'An error occurred while searching');
+        setError(message);
       }
     } finally {
       setLoading(false);

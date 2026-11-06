@@ -21,12 +21,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  // Load access token from localStorage on app start
+  // Migrate away from persistent token storage. A Firebase session is not
+  // equivalent to storing an OAuth provider access token in localStorage.
   useEffect(() => {
-    const token = localStorage.getItem('githubAccessToken');
-    if (token) {
-      setGithubAccessToken(token);
-    }
+    localStorage.removeItem('githubAccessToken');
   }, []);
 
   const login = async () => {
@@ -34,9 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const credential = GithubAuthProvider.credentialFromResult(result);
     const accessToken = credential?.accessToken || null;
     setGithubAccessToken(accessToken);
-    if (accessToken) {
-      localStorage.setItem('githubAccessToken', accessToken);
-    }
   };
 
   const logout = async () => {

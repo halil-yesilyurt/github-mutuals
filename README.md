@@ -10,7 +10,7 @@
 
 ## Overview
 
-**GitHub Mutuals** is a modern web app that helps you discover which GitHub users you follow also follow you back. Search by username (no login required) or sign in with GitHub for more accurate results and higher API limits. Every search is saved to Firebase for analytics and tracking.
+**GitHub Mutuals** is a modern web app that helps you discover which GitHub users you follow also follow you back. Search by username (no login required) or sign in with GitHub for more accurate results and higher API limits. Only signed-in users' searches are optionally saved to Firestore with minimal fields; guest searches are not logged.
 
 ---
 
@@ -18,7 +18,7 @@
 
 ### 🔐 Authentication
 
-- Sign in with GitHub (OAuth) for higher API rate limits and session persistence
+- Sign in with GitHub (OAuth) for higher API rate limits during sign-in (GitHub provider tokens are kept in memory)
 - Or search by any public GitHub username without logging in
 
 ### 🔍 Search & Analysis

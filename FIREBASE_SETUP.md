@@ -58,20 +58,39 @@ VITE_FIREBASE_APP_ID=your-app-id
 VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
 
-## 7. Update Firestore Rules (Optional)
+## 7. Deploy restrictive Firestore rules (required if analytics is enabled)
 
-For production, update Firestore security rules:
+Do **not** use a blanket `request.auth != null` rule for read and write: that
+lets any authenticated account access other users' search records.
+
+The client writes only signed-in users' searches. Anonymous searches are not
+stored. Search entries contain only `username`, `userId`, and `timestamp`.
+
+Apply these rules in **Firebase Console → Firestore Database → Rules**, then
+publish them. Repository edits alone do not change live Firebase rules.
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /searches/{document} {
-      allow read, write: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['username', 'userId', 'timestamp'])
+        && request.resource.data.keys().hasAll(['username', 'userId', 'timestamp'])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.username is string
+        && request.resource.data.username.size() > 0
+        && request.resource.data.username.size() <= 39
+        && request.resource.data.timestamp == request.time;
+      allow read, update, delete: if false;
     }
   }
 }
 ```
+
+If users need to view or delete their history later, design explicit
+per-user read/delete rules and test them with the Firestore emulator first.
+Consider a retention period in Firestore TTL settings.
 
 ## Troubleshooting
 
