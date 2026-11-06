@@ -127,11 +127,12 @@ function AppContent() {
           // Search results are independent from optional analytics storage.
         });
       }
-    } catch (err: any) {
-      if (err?.message === 'API rate limit exceeded') {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred while searching';
+      if (message === 'API rate limit exceeded') {
         setError('API rate limit exceeded. Please sign in with GitHub for more searches.');
       } else {
-        setError(err.message || 'An error occurred while searching');
+        setError(message);
       }
     } finally {
       setLoading(false);
