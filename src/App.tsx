@@ -121,10 +121,12 @@ function AppContent() {
     try {
       const comparison = await service.getMutuals(username);
       setResults(comparison);
-      // Save search to Firestore
-      const userAgent = navigator.userAgent;
-      const referrer = document.referrer;
-      await saveSearch(username, currentUser?.uid, userAgent, referrer);
+      // Optional, privacy-minimized analytics must never break a successful search.
+      if (currentUser?.uid) {
+        void saveSearch(username, currentUser.uid).catch(() => {
+          // Search results are independent from optional analytics storage.
+        });
+      }
     } catch (err: any) {
       if (err?.message === 'API rate limit exceeded') {
         setError('API rate limit exceeded. Please sign in with GitHub for more searches.');
