@@ -92,6 +92,27 @@ If users need to view or delete their history later, design explicit
 per-user read/delete rules and test them with the Firestore emulator first.
 Consider a retention period in Firestore TTL settings.
 
+### Deploy the version-controlled rules
+
+The maintained rule source is `firestore.rules` at the repository root, with
+`firebase.json` pointing to it. The rules are **not automatically deployed**
+when this PR is merged or when the Vite frontend is deployed.
+
+After verifying the correct Firebase project ID in Firebase Console:
+
+```powershell
+npx firebase-tools login
+npx firebase-tools deploy --only firestore:rules --project YOUR_FIREBASE_PROJECT_ID
+```
+
+Before deploying, check the existing production rules in Firebase Console.
+This policy intentionally denies reads and updates of all search documents; if
+other services or admin interfaces depend on client-side Firestore reads, review
+and test those workflows before applying. Firebase Rules Playground or Emulator
+should confirm anonymous create denied, cross-user create denied, own create
+allowed, and all client reads denied. Use an authorized admin/service account
+for data management, not client-side permissive rules.
+
 ## Troubleshooting
 
 - **Authentication not working**: Check if your domain is added to authorized domains in Firebase Auth settings
